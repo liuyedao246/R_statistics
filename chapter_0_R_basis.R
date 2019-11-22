@@ -1,0 +1,60 @@
+
+rm(list = ls())
+dim(Puromycin)
+head(Puromycin)
+PuroA <- subset(Puromycin, state == "treated")
+plot(rate ~ conc, data = PuroA)
+plot(PuroA$conc, PuroA$rate)
+plot(rate ~ conc, data = PuroA, pch = 2)
+
+u <- 1:25
+plot(u ~ 1, pch = u, col = u, cex = 2)
+plot(conc ~ rate , data = PuroA, pch = 4, col = 2, cex = 1.5, xlim = c(40 ,300), ylim = c(0, 1.5), xlab = "Rate", ylab = "Concentration")
+title(main = "Puromycin", cex.main = 3)
+
+library(doBy)
+PuroA.mean <- summaryBy(rate ~ conc, data = PuroA, FUN = mean)
+plot(rate ~ conc, data = PuroA, pch = 16, col = 4, cex = 1.5)
+points(rate.mean ~ conc, data = PuroA.mean, col = "cyan", lwd = 10, pch = "mean")
+text(rate.mean ~ conc, paste("mean:",rate.mean), data = PuroA.mean, col = "red", lwd = 10 )
+lines(rate.mean ~ conc, data = PuroA.mean, col = "blue")
+dev.off()
+
+plot(rate ~ conc, data = PuroA)
+smooth1 <- with(PuroA, lowess(rate ~ conc, f = 0.9))
+smooth2 <- with(PuroA, lowess(rate ~ conc, f = 0.3))
+lines(smooth1, col = "red")
+lines(smooth2, col = "blue")
+dev.off()
+
+plot(rate ~ conc, data = PuroA)
+m1 <- lm(rate ~ conc, data = PuroA)
+m2 <- lm(rate ~ conc + I(conc^2),data = PuroA)
+m3 <- lm(rate ~ conc + I(conc^2) + I(conc^3),data = PuroA )
+lines(fitted(m1) ~ conc, data = PuroA, col = "red")
+lines(fitted(m2) ~ conc, data = PuroA, col = "blue")
+lines(fitted(m3) ~ conc, data = PuroA, col = "green")
+dev.off()
+
+plot(rate ~ conc, data = PuroA)
+abline(lm(rate ~ conc, data = PuroA))
+abline(a = 100, b = 105, col = "blue")
+abline(h = 200, col = "red")
+abline(v = 0.6, col = "green")
+dev.off()
+
+mysymb <- c(1,2)[Puromycin$state]
+plot(rate ~ conc, data = Puromycin, col = mysymb, pch = mysymb)
+
+plot(rate ~ conc, data = Puromycin, col = c(1,2)[state], pch = c(1,2)[state])
+legend(x = 0, y = 210, legend = c("treated","untreated"), col = c(1,2), pch = c(1,2))
+dev.off()
+
+PuroB <- subset(Puromycin, state = "untreated")
+par(mfrow = c(1,2))
+plot(rate ~ conc, data = PuroA)
+title("state = treated")
+plot(rate ~ conc, data = PuroB)
+title("state = untreated")
+dev.off()
+rep(c(3,2,1),c(3,4,5))

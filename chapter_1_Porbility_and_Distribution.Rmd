@@ -1,0 +1,79 @@
+---
+title: "Chapter1 Probability and Distribution"
+
+output:html_document: 
+css: newsprint.css
+number_sections: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## 随机抽样
+
+sample(x, n ,replace=FALSE, prob = y)
+
+```{r}
+sample(c(1,0), 10, replace=TRUE, prob=c(0.9,0.1))
+```
+
+## 分布函数
+d,p,q,r分别为：
+
+- 概率密度函数：dfunc(x, p1, p2,....),x 为数值型向量；
+- (累积)分布函数：pfunc(q, p1, p2,....),q为数值型向量；
+- 分位数函数：qfunc(p, p1, p2,...)，p为由概率生成的向量；
+- 随机数函数：rfunc（n, p1, p2,...）,n为生成数据的个数，
+
+其中，p1，p2，...，是分布的参数值。
+
+```{r}
+rnorm(10,mean = 4, sd =2)
+dnorm(1:5, mean = 4, sd = 2)
+pnorm(1:5, mean = 4, sd = 2)
+```
+## 中心极限定理
+
+```{r echo=TRUE}
+limite.central <- function(r = runif, distpar = c(0,1), m = 0.5, s = 1/sqrt(12), n = c(1, 3, 10, 30), N = 1000){
+        for (i in n){
+                if (length(distpar)==2){x <- matrix(r(i*N, distpar[1],distpar[2]), nc = i)} 
+                else { x <- matrix(r(i*N, distpar), nc = i)}
+                       x <- (apply(x, 1, sum) - i*m)/(sqrt(i)*s)
+                       hist(x, col = 'light blue', probability = T, main = paste("n=", i), ylim = c(0, max(0.4, density(x)$y)))
+                       lines(density(x), col = 'red', lwd = 3)
+                       curve(dnorm(x), col = 'blue', lwd = 3, lty = 3, add = T)
+                if( N > 100){rug(sample(x, 100))}
+                       else{rug(x)}
+        }
+}
+
+# limite.central()
+```
+### 二项分布
+```{r,echo=TRUE}
+par(mfrow=c(2,2))
+limite.central(rbinom, distpar=c(10, 0.1), m=1, s=0.9)
+```
+
+### 泊松分布
+
+```{r}
+par(mfrow=c(2,2))
+limite.central(rpois, distpar = 1, m = 1, s = 1, n = c(3, 10, 30, 50))
+```
+
+### 均匀分布
+
+```{r}
+par(mfrow=c(2,2))
+limite.central()
+```
+
+### 指数分布
+
+```{r}
+par(mfrow=c(2,2))
+limite.central(rexp, distpar = 1, m = 1, s = 1)
+```
+

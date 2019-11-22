@@ -1,0 +1,22 @@
+# 1. rm()
+rm(list = ls())
+# 2. seq()
+seq(1,5, length.out = 5)
+# 3. rep()
+rep(c(1,2), times = 3)
+# 4.scan()     
+# 5. mode()
+# 6. length()
+mode(NaN)
+# 7.ls()
+ls()
+# 8. factor(x, levels = sort(unique(x), na.last = TRUE), labels = levels, exclude = NA, ordered = is.ordered(x))
+# 9. gl(k,n)
+t <- gl(3,6, labels = c('Male', "Female","T"))
+t <- rnorm(1000, 0,1)
+hist(t, probability = TRUE, col = "light blue")
+curve(dnorm(x),add = TRUE, col = 'red')
+t1 <- t[rank(t)]
+t2 <- t[order(t)]
+hist(t2)
+        

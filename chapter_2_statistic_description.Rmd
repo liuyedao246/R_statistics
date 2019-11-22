@@ -1,0 +1,390 @@
+---
+title: "chapter_2_statistic_description"
+
+output:html_document: 
+css: newsprint.css
+number_sections: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE
+)
+```
+## 单组数据的统计描述
+### 频数分布图
+
+```{r}
+# hist(x, breaks = "Sturges", freq = NULL, probability = !freq, col = NULL, main = paste("Histogram of", xname), xlim = range(breaks),ylim = NULL, xlab = xname, ylab, axes = TRUE, nclass = NULL)
+# 若选项breaks取向量，则用于指明直方图区间的分割位置；若取正整数，则用于指定直方图的小区间数。freq取T表示使用频数画直方图，取F则使用频率画直方图。probability与freq恰好相反。col用于指明小矩形的颜色。
+# density(x, bw = "nrd0", kernel = c("gaussian", "epanchnikov", "rectangular", "triangular", "biweight", "cosine", "optcosine"), n = 512, from, to)
+# bw指定核密度估计的窗宽，也用字符串表示窗宽选择规则。kernel为核密度估计所使用的光滑化函数，缺省为正态核函数。n给出等间隔的核密度估计点数，from与to分别给出需要计算核密度估计的左右端点。
+head(mtcars)
+par(mfrow=c(1,2))
+hist(mtcars$mpg, freq = FALSE, col = "light blue")
+lines(density(mtcars$mpg), col = "red")
+hist(mtcars$wt, freq = FALSE, col = "light blue")
+lines(density(mtcars$wt), col = "red")
+```
+
+### 集中趋势的描述
+平均数，包括算术平均数、集合平均数和中位数
+
+#### 算数平均数
+```{r, echo=TRUE}
+mean(mtcars$wt)
+median(mtcars$wt)
+# 中位数的区间估计
+wilcox.test(mtcars$wt, conf.int = TRUE)
+```
+
+#### 几何平均数
+```{r}
+geom.mean <- exp(mean(log(mtcars$wt)))
+geom.mean
+```
+
+#### 百分位数
+```{r}
+# quantile(x, prob = c(0.25, 0.50, 0.75))
+quantile(mtcars$wt)
+summary(mtcars$wt)
+```
+
+### 离散趋势的描述
+
+#### 极差
+```{r}
+max(mtcars$wt) - min(mtcars$wt)
+```
+
+#### 四分位数间距
+```{r}
+IQR(mtcars$wt)
+```
+
+#### 方差与标准差
+方差（variance）也称均方差，反应一组数据的平均离散程度。
+离均差平方和
+离均差平方和尚未考虑到变量值个数N的影响，即变量个数N越大，离均差平方和也越大。将离均差平方和除以N，则得到方差。
+```{r}
+var(mtcars$wt)
+sd(mtcars$wt)
+```
+
+#### 变异系数
+        
+## 多组数据的统计描述
+
+### summary（）函数
+
+### 分组概括函数aggregate（）
+```{r}
+# aggregate(x, by, FUN,...)
+aggregate(state.x77, list(Region = state.region),mean)
+aggregate(state.x77, list(Region = state.region, Cold = state.x77[,"Frost"]>30), mean)
+```
+
+### 标准差与协方差的计算
+```{r}
+options(digits = 3)
+sd(state.x77)
+var(state.x77)#var（）在多组数据中应用计算的协方差阵。
+```
+
+### 相关系数的计算（）
+```{r}
+# 调用格式为：cor(x, y = NULL, use = "all.obs", method = c("pearson", "kendall", "spearman"))
+# 其中，pearson相关系数可以度量线性相关程度，如果数据呈现的不是线性关系，而是单调的，这时候可使用spearman或者kendall相关系数，因为他们描述的是秩相关性。
+```
+
+## 常用分布的概率函数的图形
+
+### 二项分布
+```{r}
+n <- 20
+p <- 0.2
+k <- seq(0,n)
+par(mfrow = c(1,2))
+barplot(dbinom(k,n,p) ~ k,col = "light blue", ylim = c(0, 0.25), xlab = "k", main = "Binomial distribution , n= 20, p = 0.2", cex.main = 0.8)
+plot(k, dbinom(k, n, p), type = 'h')
+title(main = "Binomial distribution , n= 20, p = 0.2", xlab = 'k', cex.main = 0.8)
+```
+
+### 泊松分布
+```{r}
+lambda <- 4.0
+k <- seq(0, 20)
+par(mfrow = c(1,2))
+barplot(dpois(k, lambda) ~ k,col = "light blue", ylim = c(0, 0.25), xlab = "k", main = "Poisson distribution , lambda = 4.0", cex.main = 0.8)
+plot(k, dpois(k, lambda), type = "h", main = "Poisson distribution, lambda = 4.0", xlab = "k",cex.main = 0.8)
+```
+
+### 正态分布
+```{r}
+curve(dnorm(x, 0, 1), xlim = c(-5,5), ylim = c(0, 0.8),col = "red", lwd = 2, lty = 3)
+curve(dnorm(x, 0, 2), add = TRUE, col = "blue", lwd = 2, lty =3)
+curve(dnorm(x, 0, 0.5), add = TRUE, lwd = 2, lty =1)
+title(main = "Gaussian distribution")
+legend(par('usr')[2], par('usr')[4], xjust = 1, c('sigma = 1','sigma = 2', 'sigma = 1/2'), lwd = c(2,2,2), lty = c(3,2,1), col = c('red', 'blue',par('fg')))
+```
+
+### t分布
+```{r}
+curve(dt(x, 1), col = "red", lwd = 2, lty = 1, xlim = c(-3, 3), ylim = c(0, 0.4))
+curve(dt(x, 2), add = TRUE, col = "blue", lwd = 2, lty = 2)
+curve(dt(x, 10), add = TRUE, col = "orange", lwd = 2, lty = 3)
+curve(dnorm(x), add = TRUE, lwd = 3, lty = 4)
+title(main = "Student T distribution")
+legend(par('usr')[2], par('usr')[4], xjust = 1, c("df = 1", "df = 2", "df = 10", "Gaussian distribution"), lwd = c(2,2,2,2), lty = c(1,2,3,4), col = c('red', 'blue','orange', par('fg')))
+```
+
+### $X^2$分布
+```{r}
+curve(dchisq(x, 1), xlim = c(0,10), ylim = c(0, 0.6), col = 'red', lwd = 2)
+curve(dchisq(x, 2), add = TRUE, col = 'green', lwd = 2)
+curve(dchisq(x, 3), add = TRUE, col = "blue", lwd = 2)
+curve(dchisq(x, 5), add = TRUE, col = "orange", lwd = 2)
+abline(h = 0, lty =3)
+abline(v = 0, lty =3)
+title(main = "Chi square Distribution")
+legend(par('usr')[2], par('usr')[4], xjust = 1, c('df = 1', 'df = 2', 'df = 3', 'df = 5'),lwd = 3, lty = 1, col = c('red', 'green', 'blue', 'orange'))
+```
+
+### F分布
+```{r}
+curve(df(x, 1, 1), xlim = c(0,2), ylim = c(0, 0.8), lty = 1)
+curve(df(x, 3, 1), add = TRUE, lwd = 2, lty = 2)
+curve(df(x, 6, 1), add = TRUE, lwd = 2, lty = 3)
+curve(df(x, 3, 3), add = TRUE, col = "red", lwd = 3, lty =4)
+curve(df(x, 3, 6), add = TRUE, col = "blue", lwd = 3, lty =5)
+title(main = "Fisher's distributions")
+legend(par('usr')[2], par('usr')[4], xjust = 1, c("df(1,1)", "df(3,1)","df(6,1)", "df(3,3)", "df(3,6)"), col = c(par('fg'),par('fg'),par('fg'),'red','blue'), lwd = c(1,2,2,3,3), lty = c(1,2,3,4,5))
+```
+
+## 单组数据的描述性统计分析
+
+### 直方图
+
+```{r}
+# hist(x, breaks = "Sturges", freq = NULL, probability = !freq, col = NULL, main = paste("Histogram of", xname), xlim = range(breaks),ylim = NULL, xlab = xname, ylab, axes = TRUE, nclass = NULL)
+# 若选项breaks取向量，则用于指明直方图区间的分割位置；若取正整数，则用于指定直方图的小区间数。freq取T表示使用频数画直方图，取F则使用频率画直方图。probability与freq恰好相反。col用于指明小矩形的颜色。
+# density(x, bw = "nrd0", kernel = c("gaussian", "epanchnikov", "rectangular", "triangular", "biweight", "cosine", "optcosine"), n = 512, from, to)
+# bw指定核密度估计的窗宽，也用字符串表示窗宽选择规则。kernel为核密度估计所使用的光滑化函数，缺省为正态核函数。n给出等间隔的核密度估计点数，from与to分别给出需要计算核密度估计的左右端点。
+head(mtcars)
+par(mfrow=c(1,2))
+hist(mtcars$mpg, freq = FALSE, col = "light blue")
+lines(density(mtcars$mpg), col = "red")
+hist(mtcars$wt, freq = FALSE, col = "light blue")
+lines(density(mtcars$wt), col = "red")
+```
+
+### 茎叶图
+
+```{r}
+library(DAAG)
+stem(possum$totlngth)
+```
+
+### 盒形图
+
+```{r}
+# boxplot(formula, data = NULL, ..., subset, na.action = NULL)
+# formula是指明盒形图的作图规则（y～grp表示数值变量y根据因子grp分类），data说明数据的来源。
+library(DAAG)
+data("possum")
+boxplot(possum$totlngth)
+```
+
+### 正态性检验
+
+#### 使用QQ图
+```{r}
+qqnorm(possum$totlngth, main = "Normality Check via QQ plot")
+qqline(possum$totlngth, col = "red")
+```
+
+## 多组数据的描述性统计分析
+
+### 两组数据的图形概括
+
+#### 散点图
+
+```{r}
+# 通过lowess用一条非线性的特殊曲线来拟合这种关系，lowess只能适用于二维的情况，多维的情况用loess，lowess的调用格式如下：lowess(x, y = NULL, f = 2/3, iter = 3, delta = 0.01*diff(range(xy$x[0])))
+library(DAAG)
+library(lattice)
+data("cars")
+plot(cars$dist ~ cars$speed, xlab = "Speed(mph)", ylab = "Stopping distance(ft)")
+lines(lowess(cars$speed, cars$dist), col = "red", lwd = 2) # 添加拟合曲线
+# 在横轴和纵轴上表明数据的具体位置
+rug(side = 2, jitter(cars$dist, 20)) 
+rug(side = 1, jitter(cars$speed,5))
+```
+
+#### 等高线图
+```{r}
+# 先使用MASS程序包中的二维核密度估计函数kde2d（）来估计这个二维数据的密度函数，再利用函数contour（）画出密度的等高线图
+library(MASS)
+x <- rnorm(1000, mean = 5, sd = 3)
+y <- rnorm(1000, mean = 6, sd = 3)
+z <- kde2d(x, y)
+contour(z, col = "red", drawlabels = FALSE, main = "Density estimation: contour plot")
+```
+
+#### 三维透视图
+```{r}
+# 使用函数persp（）作出三维透视图
+persp(z, main = "Density estimation: perspective plot")
+```
+
+### 多组数据的图形描述
+
+```{r}
+n <- 10
+d <- data.frame(y1 = abs(rnorm(n)),
+                y2 = abs(rnorm(n)),
+                y3 = abs(rnorm(n)),
+                y4 = abs(rnorm(n)),
+                y5 = abs(rnorm(n)))
+```
+
+#### 散点图
+```{r}
+# 使用pairs()或者plot()
+plot(d)
+```
+
+#### 矩阵图
+```{r}
+matplot(d, type = "l", ylab = " ", main = "Matplot")
+```
+
+#### 盒形图
+```{r}
+boxplot(d)
+```
+
+### 分组数据的图形概括
+分组数据可视为特殊的多组数据，他们的区别是：在多组数据中各数值型变量的观测值指向不同的对象，而分组数据是指向同一个数值型变量的观测值按另一个分类变量分成若干个子集，因此，这些子集指向同一个变量。
+```{r}
+library(DAAG)
+data(cuckoos)
+# head(cuckoos)
+# table(cuckoos$species)
+```
+
+#### 使用条件散点图
+```{r}
+# coplot(formula, data, ....)
+# 对于一个因子变量a， 变量x 与 y的条件散点图可用以下命令得到：coplot(y ~ x |a)；
+# 对于两个因子变量a，b， 变量x 与 y的条件散点图可用以下命令得到：coplot( y ~ x |a*b)
+coplot(length ~ breadth | species, data = cuckoos)
+```
+
+#### 使用直方图
+使用lattice包中的直方图函数histogram（）。
+```{r}
+histogram( ~ length|species, data = cuckoos, type = "percent")
+```
+
+#### 使用盒形图
+```{r}
+boxplot(length ~ species, data = cuckoos, xlab = "length of egg", horizontal = TRUE)
+```
+
+####　使用条形图
+```{r}
+# stripchart(x, method = "overplot",...)
+# ｍethod 说明数据重复的时候应该如何放置，有三种方式：overplot是重叠放置，stack是把数据垒起来，jitter是散方在数值的周围。
+stripchart(cuckoos$length ~ cuckoos$species, method = "jitter")
+```
+
+#### 使用密度曲线图
+```{r}
+densityplot( ~ length | species, data = cuckoos)
+plot(density(cuckoos$length[cuckoos$species == "wren"]), ylim = c(0.0, 0.8), xlim = c(18, 27),main = "", xlab = "length")
+lines(density(cuckoos$length[cuckoos$species == "meadow.pipit"]),add = TRUE,col = "red")
+lines(density(cuckoos$length[cuckoos$species == "tree.pipit"]),add = TRUE,col = "green")
+lines(density(cuckoos$length[cuckoos$species == "hedge.sparrow"]),add = TRUE,col = "blue")
+lines(density(cuckoos$length[cuckoos$species == "pied.wagtail"]),add = TRUE,col = "orange")
+lines(density(cuckoos$length[cuckoos$species == "robin"]),add = TRUE,col = "light blue")
+legend(par('usr')[2], par('usr')[4], xjust = 1 ,c("wren","meadow.pipit","tree.pipit","hedge.sparrow","pied.wagtail","robin"),col = c(par('fg'),"red", "green", "blue", "orange", "light blue"), lty = c(1,1,1,1,1,1),cex = 0.8)
+title(main = "Length of eggs by species")
+```
+
+## 分类数据的描述性统计分析
+如果数据集中对应的变量都是定性变量，这样的数据成为分类数据。
+
+### 列联表的制作
+由分类数据构造列联表
+```{r}
+Eye.Hair <- matrix(c(68,20,15,5,119,84,54,29,26,17,14,14,7,94,10,16), nrow = 4, byrow = TRUE)
+colnames(Eye.Hair) <- c("Brown","Blue","Hazel","Green")
+rownames(Eye.Hair) <- c("Black","Brown","Red","Blonde")
+Eye.Hair
+```
+R中可以使用函数table（），xtabs（）或ftable（）有原始数据构造列联表。
+```{r}
+# table（factor1， factor2，...）
+library(ISwR)
+data("juul")
+attach(juul)
+table(sex)
+table(sex, menarche)
+table(menarche, tanner)
+detach(juul)
+```
+
+### 获得边际列表
+在实际使用中常需要按列联表中某个属性（因子）求和，称之为边际列联表。
+```{r}
+# 使用marigin.table()
+margin.table(Eye.Hair, 1)#按行求边际和
+margin.table(Eye.Hair, 2)#按列求边际和
+```
+
+### 频率列联表
+```{r}
+round(prop.table(Eye.Hair,1),digits = 3)# 函数round（）使显示的数据的精度保留到小数点后指定的位数。
+```
+
+### 列联表的图形描述
+
+#### 使用条形图
+```{r}
+library(ISwR)
+data("juul")
+attach(juul)
+a <- table(menarche, tanner)
+par(mfrow = c(1,2))
+barplot(a, legend.text = attr(a, "dimnames")$menarche,col = c('red','blue'),args.legend = list(x = "center"))
+barplot(a,beside = TRUE, legend.text = attr(a, "dimnames")$menarche,col = c('red','blue'),args.legend = list(x = "center"))
+detach(juul)
+```
+
+#### 使用点图
+```{r}
+dotchart(Eye.Hair)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
