@@ -1,0 +1,51 @@
+---
+title: "Parameter Estimation"
+
+output:html_document: 
+css: newsprint.css
+number_sections: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE
+)
+```
+## 点估计（矩法估计和极大似自然估计）
+
+## 单正态总体参数的区间估计
+### 均值μ的区间估计
+#### 方差$σ^2$已知时μ的区间估计
+```{r}
+z.test <- function(x, n, sigma, alpha, u0=0, alternative = "two.sided"){
+        options(digits = 4)
+        result <- list()
+        mean <- mean(x)
+        z <- (mean - u0)/(sigma/sqrt(n))
+        p <- pnorm(z, lower.tail = FALSE)
+        result$mean <- mean
+        result$z <- z
+        result$p.value <- p
+        if(alternative=="two.sided")
+                result$p.value <- 2*pnorm(abs(z), lower.tail = FALSE)
+        else if(alternative=="greater")
+                result$p.value <- pnorm(z)
+        result$conf.int <- c(
+                mean - sigma*qnorm(1 - alpha/2, mean = 0, sd = 1, lower.tail = TRUE)/sqrt(n),
+                mean + sigma*qnorm(1 - alpha/2, mean = 0, sd = 1, lower.tail = TRUE)/sqrt(n))
+        result
+}
+```
+```{r}
+x <- c(175, 176, 173, 175, 174, 173, 173, 176, 173, 179)
+result <- z.test(x, length(x), 1.5, 0.05)
+result$conf.int
+```
+
+
+
+
+
+
