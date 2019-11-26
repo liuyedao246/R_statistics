@@ -199,7 +199,7 @@ boxplot(possum$totlngth)
 ```
 
 ### 正态性检验
-
+正态性检验的方法有两大类，
 #### 使用QQ图
 ```{r}
 qqnorm(possum$totlngth, main = "Normality Check via QQ plot")
