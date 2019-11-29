@@ -1,0 +1,102 @@
+---
+title: "Analysis of Variance"
+
+output:html_document: 
+css: newsprint.css
+number_sections: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE
+)
+```
+多个样本均数的比较，用方差分析。
+应用条件：
+1. 各样本是相互独立的随机样本，均来自正态分布总体；
+2. 相互比较的各样本的总体方差相等，即具有方差齐性。
+
+## 完全随机设计资料的方差分析
+完全随机设计资料在进行统计分析时，需根据数据的分布特征选择方法，对于正态分布且方差齐同的资料，采用单因素方差分析（one-factor ANOVA）或成组t检验（g =2）；对于非正态分布或方差不齐的资料，可进行变量变换后采用单向分类方差分析或采用Kruskal-Wallis H检验。
+```{r}
+# R中函数AOV（）提供了方差分析的计算与检验，其调用格式如下：
+# aov(formula, data = NULL, projections = FALSE, qr = TRUE, contrasts = NULL, ...)
+# formula是方差分析的公式，在单因素方差分析中它表示为X～ A，data是数据框。
+NC <- c(3.53, 4.59, 4.34, 2.66, 3.59, 3.13, 2.64, 2.56, 3.50, 3.25, 3.3, 4.04, 3.53, 3.56, 3.85, 4.07, 3.52, 3.93, 4.19, 2.96, 1.37, 3.93, 2.33, 2.98, 4.00, 3.55, 2.96, 4.30, 4.16, 2.59)
+Drug2 <- c(2.42, 3.36, 4.32, 2.34, 2.68, 2.95, 1.56, 3.11, 1.81, 1.77, 1.98, 2.63, 2.86, 2.93, 2.17, 2.72, 2.65, 2.22, 2.90, 2.97, 2.36, 2.56, 2.52, 2.27, 2.98, 3.72, 2.80, 3.57, 4.02, 2.31)
+Drug4 <- c(2.86, 2.28, 2.39, 2.28, 2.48, 2.28, 3.21, 2.23, 2.32, 2.68, 2.66, 2.32, 2.61, 3.64, 2.58, 3.65, 2.66, 3.68, 2.65, 3.02, 3.48, 2.42, 2.41, 2.66, 3.29, 2.70, 3.04, 2.81, 1.97, 1.68)
+Drug7 <- c(0.89, 1.06, 1.08, 1.27, 1.63, 1.89, 1.19, 2.17, 2.28, 1.72, 1.98, 1.74, 2.16, 3.37, 2.97, 1.69, 0.94, 2.11, 2.81, 2.52, 1.31, 2.51, 1.88, 1.41, 3.19, 1.92, 2.47, 1.02, 2.10, 3.71)
+lip <- data.frame(drug = c(NC, Drug2, Drug4, Drug7), group = factor(rep(c('NC', 'Drug2', 'Drug4', 'Drug7'), each = 30)))
+boxplot(drug ~ group, data = lip)
+drug.aov <- aov(drug ~ group, data = lip)
+summary(drug.aov)
+```
+## 随机区组设计资料的方差分析
+随机区组设计资料在进行统计分析时，需根据数据分布的特征选择方法，对于正态分布且方差齐同的资料，采用双向分类的方差分析（two-way classification ANOVA）或配对t检验（g=2）；当不满足方差分析或t检验条件时，可进行变量变换后采用双向分类的方差分析或采用Friedman M检验。
+```{r}
+# 随机化区组设计的资料的方差分析可以通过调用aov（）函数，调用格式如上，对于formula为y～B +　Ａ（Ｂ是区组因子）
+drugA <- c(0.82, 0.73, 0.43, 0.41, 0.68)
+drugB <- c(0.65, 0.54, 0.34, 0.21, 0.43)
+drugC <- c(0.51, 0.23, 0.28, 0.31, 0.24)
+scarma <- data.frame(weight=c(drugA, drugB, drugC), group=rep(c('drugA','drugB','drugC'),each = 5), distri=factor(rep(c(1,2,3,4,5), 3)))
+scarma.aov <- aov(weight ~ distri + group, scarma)
+summary(scarma.aov)
+boxplot(weight ~ group, scarma)
+```
+                        
+## 拉丁方设计资料的方差分析
+拉丁方设计跟下面的两阶段交叉设计资料，只是随机化区组设计的延伸，其方差分析可以用aov()函数，只需要注意数据输入和formaula了形式。
+
+## 两阶段交叉设计资料的方差分析
+在医学研究中，欲将Ａ、Ｂ两种处理先后施加于同一批实验对象，随机地使半数实验对象先接受Ａ后接受Ｂ，而另一半实验对象则正好相反，即先接受Ｂ再接受Ａ。由于两种处理在全部实验过程中交叉进行，这种设计称为交叉设计（crossover design ）。
+```{r}
+First <- c(760, 860, 568, 780, 960, 940, 635, 440, 528, 800)
+Second <- c(770, 855, 602, 800, 958, 952, 650, 450, 530, 803)
+test <- data.frame(mol=c(First, Second), group=rep(c('first','second'), each=10),stage = c('A','B','A','A','B','B','A','B','A','B','B','A','B','B','A','A','B','A','B','A'))
+colnames(test) <- c('mol', 'group', 'stage')
+test.aov <- aov(mol ~ stage + group, test)
+summary(test.aov)
+```
+
+## 多样本均数间的多重比较
+当方差分析的结果为拒绝H0,接受H1时，只能说明ｇ个总体均数不全相等。若想进一步了解哪两个总体均数不等，须进行多个样本均数间的两两比较，或多重比较（multiple　comparison）。如用两样本均数比较的ｔ检验进行多重比较，将会加大犯Ｉ型错误的概率。
+多重比较的方法有如下三种：
+1. LSD-t检验；
+2. Dunnet-t检验；
+3. Turkey检验。
+```{r}
+# LSD-t检验:用法：加载agricolae包，使用LSD.test。语法为：LSD.test(y, trt, DFerror, MSerror, alpha = 0.05, p.adj=c("none","holm","hommel", "hochberg", "bonferroni", "BH", "BY", "fdr"), …)
+NC <- c(3.53, 4.59, 4.34, 2.66, 3.59, 3.13, 2.64, 2.56, 3.50, 3.25, 3.3, 4.04, 3.53, 3.56, 3.85, 4.07, 3.52, 3.93, 4.19, 2.96, 1.37, 3.93, 2.33, 2.98, 4.00, 3.55, 2.96, 4.30, 4.16, 2.59)
+Drug2 <- c(2.42, 3.36, 4.32, 2.34, 2.68, 2.95, 1.56, 3.11, 1.81, 1.77, 1.98, 2.63, 2.86, 2.93, 2.17, 2.72, 2.65, 2.22, 2.90, 2.97, 2.36, 2.56, 2.52, 2.27, 2.98, 3.72, 2.80, 3.57, 4.02, 2.31)
+Drug4 <- c(2.86, 2.28, 2.39, 2.28, 2.48, 2.28, 3.21, 2.23, 2.32, 2.68, 2.66, 2.32, 2.61, 3.64, 2.58, 3.65, 2.66, 3.68, 2.65, 3.02, 3.48, 2.42, 2.41, 2.66, 3.29, 2.70, 3.04, 2.81, 1.97, 1.68)
+Drug7 <- c(0.89, 1.06, 1.08, 1.27, 1.63, 1.89, 1.19, 2.17, 2.28, 1.72, 1.98, 1.74, 2.16, 3.37, 2.97, 1.69, 0.94, 2.11, 2.81, 2.52, 1.31, 2.51, 1.88, 1.41, 3.19, 1.92, 2.47, 1.02, 2.10, 3.71)
+lip <- data.frame(drug = c(NC, Drug2, Drug4, Drug7), group = as.factor(rep(c('NC', 'Drug2', 'Drug4', 'Drug7'), each = 30)))
+drug.aov <- aov(drug ~ group, data = lip)
+summary(drug.aov)
+library(agricolae)
+out <- LSD.test(drug.aov, 'group', p.adj = "bonferroni")
+# 注：将LSD.test中p.adj设置为"bonferroni"即为bonferroni检验法， 意用bonferroni法矫正p值。
+out
+```
+
+```{r}
+#　Dunnet-t检验：适用于多个试验组于一个对照组的比较。
+#　用法：加载multcomp包， 使用glht()函数。语法为：glht(model, linfct, alternative = c("two.sided", "less", "greater"), ...)
+#　其中linfct可以设置比较的分组变量以及检验方法。
+library(multcomp)
+rht <- glht(drug.aov, linfct = mcp(group = 'Dunnett'), alternative = 'two.side')
+summary(rht)
+```
+
+```{r}
+#　Turkey检验：
+#　使用t－test进行组间所有成对比较。
+#　用法：TukeyHSD函数，语法：TukeyHSD(model)
+tuk <- TukeyHSD(drug.aov)
+tuk
+```
+
+## 多样本方差比较的Barlett检验和Levene检验
+见第二章。

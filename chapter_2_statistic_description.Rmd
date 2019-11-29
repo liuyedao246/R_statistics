@@ -199,11 +199,33 @@ boxplot(possum$totlngth)
 ```
 
 ### 正态性检验
-正态性检验的方法有两大类，
+正态性检验的方法有两大类，一是图示法，主要采用概率图（probability-probability plot， P-P plot）和分位数图（quantile-quantile plot， Q-Q plot），其中P-P图是以实际或观察的累积频率（X）对被检验分布的理论或期望累积频率（Y）作图，而Q-Q图是以实际或观察的分位数（X）对被检验分布的理论或期望分位数（Y）作图，其中以Q-Q图效率最高。二是计算法，又分为两种：1. 对偏度（skewness）和峰度（kurtosis）各用一个指标来评定，其中以矩法（method of moment）效率最高；2. 仅用一个指标来综合 评定，其中以W检验法和W`检验法效率最高，适用样本含量少于100的资料；D检验法效率也高，适用样本含量n为10~2000的资料。
 #### 使用QQ图
 ```{r}
 qqnorm(possum$totlngth, main = "Normality Check via QQ plot")
 qqline(possum$totlngth, col = "red")
+```
+
+####适用矩法求偏度和峰度
+```{r}
+# 通过调用fBasics包中的skewness（）和kurtosis（）函数可以计算偏度与峰度。理论上，总体偏度系数r1=0为对称，r1>0为正偏态，r1<1为负偏态；总体峰度系数r2=0为正态峰，r2>0为尖峭峰，r2<0为平阔峰。
+if(!require(fBasics))
+        install.packages("fBasics")
+library(fBasics)
+skewness(possum$totlngth)
+kurtosis(possum$totlngth)
+```
+
+### 方差齐性检验
+两总体方差是否相等的判断过去多用F检验（F test），现在多用Levene检验（Levene test）。
+```{r}
+# R程序包car中提供了Levene检验的函数leveneTest()
+library(car)
+leveneTest(possum$totlngth, group = possum$Pop)
+```
+
+```{r}
+bartlett.test(totlngth ~ Pop, data = possum)
 ```
 
 ## 多组数据的描述性统计分析
