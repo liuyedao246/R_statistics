@@ -1,0 +1,110 @@
+---
+title: "Chi-square test"
+
+output:html_document: 
+css: newsprint.css
+number_sections: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE
+)
+```
+卡方检验的应用，包括推断两个总体率或构成比之间有无差别、多个总体率或构成比之间有无差别、多个样本率间的多重比较、两个分类变量之间有无关联性、多为列联表的分析和频数分布的拟合优度的$X^2$检验。
+
+## 四个表资料的$X^2$检验
+$X^2$值反应了实际频数与理论频数的吻合程度。若检验假设H0成立，实际频数与理论频数的差值会小，则$X^2$值也会小；反之，若检验假设H0不成立，实际频数与理论频数的差值会大，则$X^2$值也会大。
+```{r}
+# 函数chisq.test()可完成原假设的检验。chisq.test()的调用格式如下：
+# chisq.test(x, y = NULL, correct = TRUE, p = rep(1/length(x), length(x)), rescale.p = FALSE, simulate.p.value = FALSE, B = 2000)
+# x为向量或矩阵，若x是一维的且y不给出（y = NULL），则chisq.test()函数用于分布的拟合优度检验，这时是检验总体概率是否与给定的p相同，p缺省表示进行等可能性检验；x与y同事给出则进行列联表检验。
+uri <- matrix(c(99, 5, 75, 21), nr = 2, byrow = TRUE,
+dimnames = list(c('control', 'experiment'), c('effect', 'no-effect')))
+
+chisq.test(uri,correct = FALSE)
+```
+## 配对四个表资料的$X^2$检验
+- 在此处的配对即同一样本接受两种处理
+- 用结果不一致的两种情况计算统计量卡方（分b+c>=40和b+c<40的情况）
+- 称为McNemar卡方检验
+```{r}
+# 方法一：
+ANA <- matrix(c(11, 12, 2, 33), nr = 2, dimnames = list(c("positive", 'negative'), c('positive', 'negetive')))
+if (ANA[1,2]+ANA[2,1]>=40) {
+  x_sq <- (ANA[1,2]-ANA[2,1])^2/(ANA[1,2]+ANA[2,1])
+}else { x_sq <- (abs(ANA[1,2]-ANA[2,1])-1)^2/(ANA[1,2]+ANA[2,1]) }
+cat("chi-squareed = ", x_sq, 
+    "    p-value = ", 
+    pchisq(x_sq, df=1, lower.tail=FALSE), 
+    sep="")
+
+# 方法二：
+mcnemar.test(ANA)
+```
+
+## 四个表资料的Fisher确切概率法
+```{r}
+# R语言中的fisher.test（）函数可完成假设检验，fisher.test（）的调用格式如下：
+# fisher.test(x, y = NULL, workspace = 200000, hybrid = FALSE, hybridPars = c(expect = 5, percent = 80, Emin = 1), control = list(), or = 1, alternative = "two.side", conf.int = TRUE, conf.level = 0.95, simulate.p.value = FALSE, B = 2000)
+HBV <- matrix(c(4, 5, 18, 6), nr = 2, dimnames = list(c('prevent', 'no-prevent'), c('positive', 'negative')))
+fisher.test(HBV, alternative = "two.side")
+```
+
+## 行X列表资料的$X^2$检验
+
+### 多个样本率的比较
+```{r}
+therapy <- matrix(c(199, 164, 118, 7, 18, 26), nr = 3, dimnames = list(c('physics','drug', 'external'), c('effective', 'no-effective')))
+chisq.test(therapy)
+```
+
+### 样本构成比的比较
+```{r}
+ACE <- matrix(c(42, 30, 48, 72, 21, 36), nr = 2, dimnames = list(c("DN", "no-DN"), c("DD", "ID", "II")))
+chisq.test(ACE)
+```
+
+### 双向无序分类资料的关联性检验
+```{r}
+mat <- matrix(c(431, 388, 495, 137, 490, 410, 587, 179, 902, 800, 950, 32), nrow=4)
+chisq.test(mat)
+x_sq <- chisq.test(mat)$statistic[[1]]
+ContCoef <- sqrt(x_sq/(x_sq+sum(mat)))
+print(ContCoef)
+```
+
+### 双向有序分类资料的线性趋势检验
+
+
+## 多个样本率间的多重比较
+
+多个样本率间的多重比较的方法有$X^2$分割法（partitions of $X^2$ method）、Scheffe`可信区间法和SNK法。
+```{r}
+# R语言中rcompanion包中的函数pairwiseNominalIndependence函数可进行多重比较
+therapy <- matrix(c(199, 164, 118, 7, 18, 26), nr = 3, dimnames = list(c('physics','drug', 'external'), c('effective', 'no-effective')))
+library(rcompanion)
+t <- pairwiseNominalIndependence(therapy,
+                            fisher = FALSE,
+                            gtest  = FALSE,
+                            chisq  = TRUE,
+                            method = "bonferroni")
+t
+```
+
+## 双向有序R×C列联表分析-CMH检验
+```{r}
+# 
+as <- matrix(c(70, 27, 16, 9, 22, 24, 23, 20, 4, 9, 13, 15, 2, 3, 7, 14), nr = 4, dimnames = list(age = c('a','b','c','d'), level = c('N', 'P', 'PP', 'PPP')))
+library(vcdExtra)
+CMHtest(as)
+
+ami.pop <- array(c(17, 121, 47, 944, 12, 14, 158, 663), dim = c(2,2,2), dimnames = list(group = c('Patients', 'NC'), pop = c('Y','N'), age = c('40less', '40more') ))
+ami.pop
+CMHtest(ami.pop, overall = TRUE)
+```
+
+## 频数分布拟合优度的$X^2$检验
+由于Pearson$X^2$值能反应实际频数与理论频数的吻合程度，所以$X^2$检验可以用于推断频数分布的拟合优度（goodness of fit）。
