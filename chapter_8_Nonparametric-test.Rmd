@@ -1,0 +1,82 @@
+---
+title: "nonparametric test"
+
+output:html_document: 
+css: newsprint.css
+number_sections: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE
+)
+```
+非参数检验（nonparametric test）是相对于参数检验（parametric test）而言的。如果总体分布为已知的数学形式，对其总体参数做假设检验成为参数检验。
+
+## 配对样本的Wilcoxon符号秩检验
+Wilconxon符号秩和检验（Wilcoxon signed-rank test），亦称符号秩和检验，用于配对样本差值的中位数和0比较；还可以用于单个样本中位数和总体中位数比较。
+```{r}
+# R中的函数wilcoxon.test()可完成原假设的检验，调用格式如下：
+# wilcox.test(x, y = NULL, alternative = c("two.sided", "less", "greater"), mu = 0, paired = FALSE, exact = NULL, correct = TRUE, conf.int = FALSE, conf.level = 0.95,...)
+# 其中，exact表示是否算出准确的p值；correct表示大样本时是否做连续型修正。
+old <- c(60, 142, 195, 80, 242, 220, 190, 25, 198, 38, 236, 95)
+new <- c(76, 152, 243, 82, 240, 220, 205, 38, 243, 44, 190, 100)
+wilcox.test(old, new, paired = TRUE, correct = FALSE)
+
+urF <- c(44.21, 45.30, 46.39, 49.47, 51.50, 53.16, 53.26, 54.37, 57.16, 67.37, 71.05, 87.37)
+wilcox.test(urF, mu = 45.30)
+```
+
+## 两个独立样本比较的Wilcoxon秩和检验
+Wilconxon秩和检验（Wilcoxon rank sum test），用于推断计量资料或等级资料的两个独立样呢所来自的两个总体分布是否有差别。
+### 原始数据的两样本比较
+```{r}
+options(digits = 6)
+lung_cancer <- c(2.78, 3.23, 4.20, 4.87, 5.12, 6.21, 7.18, 8.05, 8.56, 9.60)
+ps <- c(3.23, 3.50, 4.04, 4.15, 4.28, 4.34, 4.47, 4.64, 4.75, 4.82, 4.95, 5.10)
+wilcox.test(lung_cancer, ps, alternative = "greater",paired = FALSE, exact = FALSE)
+```
+ 在R中，wilcox.test()函数可以用来做Wilcoxon秩和检验，也可以用于做Mann-Whitney U检验。当参数为单个样本，或者是两个样本相减，或者是两个参数，paired=TRUE时，是Wilcoxon秩和检验。当paired = FALSE（独立样本）时，就是Mann-Whitney U检验，在这个题目中，用的就是Mann-Whitney U检验，虽然结果中W=86.5与书中的T=141.5不一样，但本质上是一样的，换算如下：W1=141.5-10*(10+1)/2=86.5；W2=111.5-12*(12+1)/2=33.5
+
+### 频数表资料和等级资料的两样本比较
+```{r}
+# HbCO <- matrix(c(1, 8, 16, 10, 4, 2, 23, 11, 4, 0), nr = 5, dimnames = list(c("VL", "L", "M", "H", "VH"), c("smoking", "no-smoking")))
+# rank.c <- c(1:5)
+# group1 <- rep(rank.c, smoke)
+# group2 <- rep(rank.c, )
+# wilcox.test(HbCO)
+smoke <- c(1,8,16,10,4)
+no.smoke <-c(2,23,11,4,0)
+rank.c <- c(1:5)
+group1 <- rep(rank.c,smoke)
+group2 <- rep(rank.c,no.smoke)
+data84 <- c(group1,group2)
+group.f <-factor(c(rep(1,length(group1)),rep(2,length(group2))))
+wilcox.test(data84~group.f)
+```
+
+## 完全随机设计多个样本比较的Kruskal-Wallis H检验
+```{r}
+# R中的函数krskal.test()可完成原假设的检验
+# x为一向量或列表，g为对x分类的因子，当x为列表时g可以省略
+dingluo <- list(DrugA = c(32.5, 35.5, 40.5, 46.0, 49.0),
+                DrugB = c(16, 20.5, 22.5, 29.0, 36.0),
+                DrugC = c(6.5, 9.0, 12.5, 18.0,24.0))
+kruskal.test(dingluo)
+
+live <- list(D9 = c(2,2,2,3,4,4,4,5,7,7),
+             C11 = c(5,5,6,6,6,7,8,10,12),
+             DSC = c(3,5,6,6,6,7,7,9,10,11,11))
+kruskal.test(live)
+```
+
+
+     
+     
+     
+     
+     
+     
+        
