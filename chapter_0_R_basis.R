@@ -1,4 +1,4 @@
-
+# 练习
 rm(list = ls())
 dim(Puromycin)
 head(Puromycin)
