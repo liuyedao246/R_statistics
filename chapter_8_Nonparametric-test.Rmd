@@ -38,7 +38,7 @@ lung_cancer <- c(2.78, 3.23, 4.20, 4.87, 5.12, 6.21, 7.18, 8.05, 8.56, 9.60)
 ps <- c(3.23, 3.50, 4.04, 4.15, 4.28, 4.34, 4.47, 4.64, 4.75, 4.82, 4.95, 5.10)
 wilcox.test(lung_cancer, ps, alternative = "greater",paired = FALSE, exact = FALSE)
 ```
- 在R中，wilcox.test()函数可以用来做Wilcoxon秩和检验，也可以用于做Mann-Whitney U检验。当参数为单个样本，或者是两个样本相减，或者是两个参数，paired=TRUE时，是Wilcoxon秩和检验。当paired = FALSE（独立样本）时，就是Mann-Whitney U检验，在这个题目中，用的就是Mann-Whitney U检验，虽然结果中W=86.5与书中的T=141.5不一样，但本质上是一样的，换算如下：W1=141.5-10*(10+1)/2=86.5；W2=111.5-12*(12+1)/2=33.5
+ 在R中，wilcox.test()函数可以用来做Wilcoxon秩和检验，也可以用于做Mann-Whitney U检验。当参数为单个样本，或者是两个样本相减，或者是两个参数，paired=TRUE时，是Wilcoxon秩和检验。当paired = FALSE（独立样本）时，就是Mann-Whitney U检验，在这个题目中，用的就是Mann-Whitney U检验，虽然结果中W=86.5与书中的T=141.5不一样，但本质上是一样的，换算如下：$W1=141.5-10*(10+1)/2=86.5$；$W2=111.5-12*(12+1)/2=33.5$
 
 ### 频数表资料和等级资料的两样本比较
 ```{r}
@@ -72,11 +72,41 @@ live <- list(D9 = c(2,2,2,3,4,4,4,5,7,7),
 kruskal.test(live)
 ```
 
+#### 频数表资料和等级资料的多个样本比较
+```{r}
+x1 <- c(0, 2, 9, 6)
+x2 <- c(3, 5, 5, 2)
+x3 <- c(5, 7, 3, 2)
+x4 <- c(3, 5, 3, 0)
 
-     
-     
-     
-     
-     
-     
-        
+freq <- function(x){
+        count <- c()
+        for (i in 1:4) {
+                count1 <- c(rep(i, x[i]))
+                count <- append(count, count1)
+        }
+        return(count)
+}
+        data87 <- c(freq(x1), freq(x2), freq(x3), freq(x4))
+        group <- c(rep(1, sum(x1)), rep(2, sum(x2)),rep(3, sum(x3)), rep(4, sum(x4)))
+kruskal.test(data87 ~ group)
+
+```
+
+### 多个独立样本两两比较的Nemenyi检验
+```{r}
+library(pgirmess)
+library(coin)
+library(multcomp)
+live <- data.frame(days = c(2,2,2,3,4,4,4,5,7,7,5,5,6,6,6,7,8,10,12,3,5,6,6,6,7,7,9,10,11,11), group = c(rep("D9", 10), rep("C11", 9), rep("DSC", 11)))
+kruskal.test(days ~ group, data=live)
+kruskalmc(days ~ group, data = live, probs = 0.05)
+# 不能给出具体的值
+# 构造函数，计算具体的值
+mult <- oneway_test(days ~ group, data = live,
+ytrafo = function(data) trafo(data, numeric_trafo = rank),
+xtrafo = function(data) trafo(data, factor_trafo = function(x)
+model.matrix(~x - 1) %*% t(contrMat(table(x), "Tukey"))),
+teststat = "max", distribution = approximate(B = 90000)) 
+pvalue(mult, method = "single-step") 
+```

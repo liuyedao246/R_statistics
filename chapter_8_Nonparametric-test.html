@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
 <head>
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
@@ -758,7 +757,6 @@ code {
 }
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
@@ -820,6 +818,7 @@ summary {
   border: none;
   display: inline-block;
   border-radius: 4px;
+  background-color: transparent;
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li {
@@ -857,8 +856,8 @@ summary {
 
 
 <p>非参数检验（nonparametric test）是相对于参数检验（parametric test）而言的。如果总体分布为已知的数学形式，对其总体参数做假设检验成为参数检验。</p>
-<div id="wilcoxon" class="section level2">
-<h2>配对样本的Wilcoxon符号秩和检验</h2>
+<div id="配对样本的wilcoxon符号秩检验" class="section level2">
+<h2>配对样本的Wilcoxon符号秩检验</h2>
 <p>Wilconxon符号秩和检验（Wilcoxon signed-rank test），亦称符号秩和检验，用于配对样本差值的中位数和0比较；还可以用于单个样本中位数和总体中位数比较。</p>
 <pre class="r"><code># R中的函数wilcoxon.test()可完成原假设的检验，调用格式如下：
 # wilcox.test(x, y = NULL, alternative = c(&quot;two.sided&quot;, &quot;less&quot;, &quot;greater&quot;), mu = 0, paired = FALSE, exact = NULL, correct = TRUE, conf.int = FALSE, conf.level = 0.95,...)
@@ -880,6 +879,122 @@ wilcox.test(urF, mu = 45.30)</code></pre>
 ## data:  urF
 ## V = 65, p-value = 0.005099
 ## alternative hypothesis: true location is not equal to 45.3</code></pre>
+</div>
+<div id="两个独立样本比较的wilcoxon秩和检验" class="section level2">
+<h2>两个独立样本比较的Wilcoxon秩和检验</h2>
+<p>Wilconxon秩和检验（Wilcoxon rank sum test），用于推断计量资料或等级资料的两个独立样呢所来自的两个总体分布是否有差别。 ### 原始数据的两样本比较</p>
+<pre class="r"><code>options(digits = 6)
+lung_cancer &lt;- c(2.78, 3.23, 4.20, 4.87, 5.12, 6.21, 7.18, 8.05, 8.56, 9.60)
+ps &lt;- c(3.23, 3.50, 4.04, 4.15, 4.28, 4.34, 4.47, 4.64, 4.75, 4.82, 4.95, 5.10)
+wilcox.test(lung_cancer, ps, alternative = &quot;greater&quot;,paired = FALSE, exact = FALSE)</code></pre>
+<pre><code>## 
+##  Wilcoxon rank sum test with continuity correction
+## 
+## data:  lung_cancer and ps
+## W = 86.5, p-value = 0.0432
+## alternative hypothesis: true location shift is greater than 0</code></pre>
+<p>在R中，wilcox.test()函数可以用来做Wilcoxon秩和检验，也可以用于做Mann-Whitney U检验。当参数为单个样本，或者是两个样本相减，或者是两个参数，paired=TRUE时，是Wilcoxon秩和检验。当paired = FALSE（独立样本）时，就是Mann-Whitney U检验，在这个题目中，用的就是Mann-Whitney U检验，虽然结果中W=86.5与书中的T=141.5不一样，但本质上是一样的，换算如下：<span class="math inline">\(W1=141.5-10*(10+1)/2=86.5\)</span>；<span class="math inline">\(W2=111.5-12*(12+1)/2=33.5\)</span></p>
+<div id="频数表资料和等级资料的两样本比较" class="section level3">
+<h3>频数表资料和等级资料的两样本比较</h3>
+<pre class="r"><code># HbCO &lt;- matrix(c(1, 8, 16, 10, 4, 2, 23, 11, 4, 0), nr = 5, dimnames = list(c(&quot;VL&quot;, &quot;L&quot;, &quot;M&quot;, &quot;H&quot;, &quot;VH&quot;), c(&quot;smoking&quot;, &quot;no-smoking&quot;)))
+# rank.c &lt;- c(1:5)
+# group1 &lt;- rep(rank.c, smoke)
+# group2 &lt;- rep(rank.c, )
+# wilcox.test(HbCO)
+smoke &lt;- c(1,8,16,10,4)
+no.smoke &lt;-c(2,23,11,4,0)
+rank.c &lt;- c(1:5)
+group1 &lt;- rep(rank.c,smoke)
+group2 &lt;- rep(rank.c,no.smoke)
+data84 &lt;- c(group1,group2)
+group.f &lt;-factor(c(rep(1,length(group1)),rep(2,length(group2))))
+wilcox.test(data84~group.f)</code></pre>
+<pre><code>## 
+##  Wilcoxon rank sum test with continuity correction
+## 
+## data:  data84 by group.f
+## W = 1137, p-value = 0.000218
+## alternative hypothesis: true location shift is not equal to 0</code></pre>
+</div>
+</div>
+<div id="完全随机设计多个样本比较的kruskal-wallis-h检验" class="section level2">
+<h2>完全随机设计多个样本比较的Kruskal-Wallis H检验</h2>
+<pre class="r"><code># R中的函数krskal.test()可完成原假设的检验
+# x为一向量或列表，g为对x分类的因子，当x为列表时g可以省略
+dingluo &lt;- list(DrugA = c(32.5, 35.5, 40.5, 46.0, 49.0),
+                DrugB = c(16, 20.5, 22.5, 29.0, 36.0),
+                DrugC = c(6.5, 9.0, 12.5, 18.0,24.0))
+kruskal.test(dingluo)</code></pre>
+<pre><code>## 
+##  Kruskal-Wallis rank sum test
+## 
+## data:  dingluo
+## Kruskal-Wallis chi-squared = 9.74, df = 2, p-value = 0.00767</code></pre>
+<pre class="r"><code>live &lt;- list(D9 = c(2,2,2,3,4,4,4,5,7,7),
+             C11 = c(5,5,6,6,6,7,8,10,12),
+             DSC = c(3,5,6,6,6,7,7,9,10,11,11))
+kruskal.test(live)</code></pre>
+<pre><code>## 
+##  Kruskal-Wallis rank sum test
+## 
+## data:  live
+## Kruskal-Wallis chi-squared = 9.94, df = 2, p-value = 0.00694</code></pre>
+<div id="频数表资料和等级资料的多个样本比较" class="section level4">
+<h4>频数表资料和等级资料的多个样本比较</h4>
+<pre class="r"><code>x1 &lt;- c(0, 2, 9, 6)
+x2 &lt;- c(3, 5, 5, 2)
+x3 &lt;- c(5, 7, 3, 2)
+x4 &lt;- c(3, 5, 3, 0)
+
+freq &lt;- function(x){
+        count &lt;- c()
+        for (i in 1:4) {
+                count1 &lt;- c(rep(i, x[i]))
+                count &lt;- append(count, count1)
+        }
+        return(count)
+}
+        data87 &lt;- c(freq(x1), freq(x2), freq(x3), freq(x4))
+        group &lt;- c(rep(1, sum(x1)), rep(2, sum(x2)),rep(3, sum(x3)), rep(4, sum(x4)))
+kruskal.test(data87 ~ group)</code></pre>
+<pre><code>## 
+##  Kruskal-Wallis rank sum test
+## 
+## data:  data87 by group
+## Kruskal-Wallis chi-squared = 15.51, df = 3, p-value = 0.00143</code></pre>
+</div>
+<div id="多个独立样本两两比较的nemenyi检验" class="section level3">
+<h3>多个独立样本两两比较的Nemenyi检验</h3>
+<pre class="r"><code>library(pgirmess)
+library(coin)
+library(multcomp)
+live &lt;- data.frame(days = c(2,2,2,3,4,4,4,5,7,7,5,5,6,6,6,7,8,10,12,3,5,6,6,6,7,7,9,10,11,11), group = c(rep(&quot;D9&quot;, 10), rep(&quot;C11&quot;, 9), rep(&quot;DSC&quot;, 11)))
+kruskal.test(days ~ group, data=live)</code></pre>
+<pre><code>## 
+##  Kruskal-Wallis rank sum test
+## 
+## data:  days by group
+## Kruskal-Wallis chi-squared = 9.94, df = 2, p-value = 0.00694</code></pre>
+<pre class="r"><code>kruskalmc(days ~ group, data = live, probs = 0.05)</code></pre>
+<pre><code>## Multiple comparison test after Kruskal-Wallis 
+## p.value: 0.05 
+## Comparisons
+##           obs.dif critical.dif difference
+## C11-D9  10.377778      9.68338       TRUE
+## C11-DSC  0.494949      9.47259      FALSE
+## D9-DSC  10.872727      9.20841       TRUE</code></pre>
+<pre class="r"><code># 不能给出具体的值
+# 构造函数，计算具体的值
+mult &lt;- oneway_test(days ~ group, data = live,
+ytrafo = function(data) trafo(data, numeric_trafo = rank),
+xtrafo = function(data) trafo(data, factor_trafo = function(x)
+model.matrix(~x - 1) %*% t(contrMat(table(x), &quot;Tukey&quot;))),
+teststat = &quot;max&quot;, distribution = approximate(B = 90000)) 
+pvalue(mult, method = &quot;single-step&quot;) </code></pre>
+<pre><code>## [1] 0.00433333
+## 99 percent confidence interval:
+##  0.00379002 0.00492975</code></pre>
+</div>
 </div>
 
 
