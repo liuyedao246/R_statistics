@@ -1,5 +1,5 @@
 ---
-title: "nonparametric test"
+title: "Nonparametric test"
 
 output:html_document: 
 css: newsprint.css
