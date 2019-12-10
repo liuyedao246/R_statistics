@@ -1,0 +1,81 @@
+---
+title: "Chapter9 Linear Regression"
+
+output:html_document: 
+css: newsprint.css
+number_sections: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 直线回归
+
+### 回归方程的求法
+
+```{r}
+# 在R中，由函数lm（）可以非常方便的求出回归方程，函数confint（）可以求出参数的置信区间。与回归分析有关的函数还有summary（）、anova（）和predict（）等。函数lm（）的调用格式为，
+# lm(formula, data, subset, weights, na.action, method = "qr", model = TRUE, x = FALSE, y = FALSE, qr = TRUE, ...)
+age <- c(13, 11, 9, 6, 8, 10, 12, 7)
+Cre <- c(3.54, 3.01, 3.09, 2.48, 2.56, 3.36, 3.18, 2.65)
+plot(age, Cre, main = "正常儿童年龄与肌酐含量的关系", xlab = "年龄（岁）", ylab = "肌酐含量（mmol/24 h）")
+abline(lm(Cre ~ age))
+lm.reg <- lm(Cre ~ age)
+```
+
+### 回归方程的假设检验
+
+方差分析和t检验都可以通过summary()函数获得。
+```{r}
+age <- c(13, 11, 9, 6, 8, 10, 12, 7)
+Cre <- c(3.54, 3.01, 3.09, 2.48, 2.56, 3.36, 3.18, 2.65)
+lm.reg <- lm(Cre ~ age)
+summary(lm.reg)
+par(mfrow = c(2,2))
+plot(lm.reg)
+#1. Residual vs fitted 为拟合值y对残差的图形；
+#2. Normal QQ-plot
+#3. Scale-Location图显示了标准化残差（standardized residuals）的平方根的分布情况，最高点为残差最大值点
+#4. Cook距离（Cook‘s distance）图显示了对回归的影响点
+```
+
+### 参数估计
+
+```{r}
+# 函数confint（）的调用格式为
+# confint(object, parm, level = 0.95, ...)
+# object是指回归模型，parm要求指出所求区间估计的参数，默认值为所有回归参数，level是指置信水平
+confint(lm.reg, level = 0.95)
+```
+
+### 估计和预测
+
+```{r}
+point <- data.frame(age = 12)
+predict(lm.reg, point, interval = "prediction", level = 0.95)
+```
+
+## 直线相关
+
+```{r}
+# 调用格式为：cor(x, y = NULL, use = "all.obs", method = c("pearson", "kendall", "spearman"))
+# 其中，pearson相关系数可以度量线性相关程度，如果数据呈现的不是线性关系，而是单调的，这时候可使用spearman或者kendall相关系数，因为他们描述的是秩相关性。
+weight <- c(43, 74, 51, 58, 50, 65, 54, 57, 67, 69, 80, 48, 38, 85, 54)
+volume <- c(217.22, 316.18, 231.11, 220.96, 254.70, 293.84, 263.28, 271.73, 263.46, 276.53, 341.15, 261.00, 213.20, 315.12, 252.08)
+plot(volume ~ weight, main = "体重与双肾体积", xlab = "体重（kg）", ylab = "体积（ml）")
+abline(lm(volume ~ weight))
+cor(weight, volume)
+#  cor.test(x, y, alternative = c("two.sided", "less", "greater"), method = c("pearson", "kendall", "spearman"), exact = NULL, conf.level = 0.95, ...)
+# x,y是长度相同的向量；alternative是备择假设， 默认值为“two.sided";method是选择检验方法，默认值Pearson检验；coef.level是置信水平，默认值为0.95.
+cor.test(weight, volume, )
+# cor.test()另一种调用格式
+# cor.test(formula, data, subset, na.action,...)
+# formula是公式， 形如”u + v“， ”u“， ”v", 他们必须是具有相同长度的数值向量；data是数据框；subset是可选择向量，表示观察值的子集。
+death <- c(0.03, 0.14, 0.20, 0.43, 0.44, 0.45, 0.47, 0.65, 0.95, 0.96, 2.44, 2.69, 3.07, 7.78, 9.82, 18.93, 22.59, 27.96)
+WYPLL <- c(0.05, 0.34, 0.93, 0.69, 0.38, 0.79, 1.19, 4.74, 2.31, 5.95, 1.11, 3.53, 3.48, 5.65, 33.95, 17.16, 8.42, 9.33)
+plot(death, WYPLL)
+cor.test(death, WYPLL, method = "spearman", continuity = TRUE)
+```
+
+
